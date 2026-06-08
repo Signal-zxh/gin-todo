@@ -1,0 +1,19 @@
+<h1>TODO List</h1>
+
+<form action="/add" method="POST">
+    <input type="text" name="task" placeholder="写一个新任务..." required>
+    <button type="submit">添加</button>
+</form>
+
+<ul>
+    {{range .}}
+        <li>
+            {{if .Completed}}✅{{else}}⭕{{end}}
+            {{.Task}}
+            {{if not .Completed}}
+                <a href="/complete/{{.ID}}">完成</a>
+            {{end}}
+                <a href="/delete/{{.ID}}" style="color: red; margin-left: 10px;">删除</a>
+        </li>
+    {{end}}
+</ul>
