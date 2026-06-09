@@ -135,13 +135,14 @@ func deleteHandler(c *gin.Context) {
 }
 
 func main() {
+	// 配置并连接 MySQL
 	cfg := mysql.NewConfig()
 	cfg.User = os.Getenv("DBUSER")
 	cfg.Passwd = os.Getenv("DBPASS")
 	cfg.Net = "tcp"
 	cfg.Addr = "127.0.0.1:3306"
 	cfg.DBName = "gin_todo"
-	// Get a database handle.
+
 	var err error
 	db, err = sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
@@ -152,16 +153,21 @@ func main() {
 		log.Fatal(pingErr)
 	}
 	fmt.Println("Connected!")
-
+	// 连接 Redis
 	initRedis()
-
+	// 设置Gin 路由
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
+
 	router.GET("/", ListHandler)
 	router.GET("/complete/:id", completeHandler)
 	router.GET("/delete/:id", deleteHandler)
 	router.POST("/add", addHandler)
-	router.Run("localhost:8080")
+
+	fmt.Println("Server starting on http://localhost:8080")
+	if err := router.Run("localhost:8080"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func todoByID(id int) (Todo, error) {
