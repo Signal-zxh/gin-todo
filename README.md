@@ -16,10 +16,13 @@
 - Go 1.26.3
 - Gin Web Framework
 - MySQL 9.3.0
+- Redis
 
 ## 前置条件
 
-- 安装 MySQL 并启动服务
+- 安装 MySQL 和 Redis 并启动服务
+- MySQL（后台运行）：`brew services start mysql`
+- Redis（前台运行，需保持终端窗口打开）：`redis-stack-server`
 - 确保你有数据库的 `root` 权限，或已创建相应的数据库用户
 
 ## 配置环境变量
