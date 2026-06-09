@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
+	"github.com/redis/go-redis/v9"
 )
 
 type Todo struct {
@@ -22,6 +26,19 @@ type Todo struct {
 var db *sql.DB
 
 func ListHandler(c *gin.Context) {
+	ctx := context.Background()
+	cacheKey := "todos:list"
+	// 1. 尝试从Redis 取缓存
+	cached, err := rdb.Get(ctx, cacheKey).Result()
+	if err == nil {
+		// 缓存命中
+		var todos []Todo
+		if err := json.Unmarshal([]byte(cached), &todos); err == nil {
+			c.HTML(http.StatusOK, "list.html", todos)
+			return
+		}
+	}
+	// 2. 缓存未命中
 	rows, err := db.Query("SELECT id, task, completed FROM todos")
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -43,6 +60,14 @@ func ListHandler(c *gin.Context) {
 		return
 	}
 
+	// 3. 把查询结果存到Redis， 设置30s过期
+	jsonData, err := json.Marshal(todos)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to marshal todos")
+		return
+	}
+	rdb.Set(ctx, cacheKey, jsonData, 30*time.Second)
+
 	c.HTML(http.StatusOK, "list.html", todos)
 }
 
@@ -63,6 +88,7 @@ func addHandler(c *gin.Context) {
 	}
 	fmt.Printf("Added todo: %d, %s\n", id, task)
 
+	invalidateCache()
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -87,6 +113,7 @@ func completeHandler(c *gin.Context) {
 		return
 	}
 
+	invalidateCache()
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -103,6 +130,7 @@ func deleteHandler(c *gin.Context) {
 		return
 	}
 
+	invalidateCache()
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -124,6 +152,8 @@ func main() {
 		log.Fatal(pingErr)
 	}
 	fmt.Println("Connected!")
+
+	initRedis()
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
@@ -174,4 +204,18 @@ func deleteTodo(id int) error {
 		return fmt.Errorf("deleteTodo: %v", err)
 	}
 	return nil
+}
+
+var rdb *redis.Client
+var cacheKey = "todos:list"
+
+func initRedis() {
+	rdb = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+}
+
+func invalidateCache() {
+	ctx := context.Background()
+	rdb.Del(ctx, cacheKey)
 }
