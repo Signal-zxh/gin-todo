@@ -42,4 +42,5 @@ mysql -u root -p < scripts/create-tables.sql
 ```bash
 go run .
 ```
+docker compose up --build
 打开浏览器访问 http://localhost:8080

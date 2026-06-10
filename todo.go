@@ -140,7 +140,12 @@ func main() {
 	cfg.User = os.Getenv("DBUSER")
 	cfg.Passwd = os.Getenv("DBPASS")
 	cfg.Net = "tcp"
-	cfg.Addr = "127.0.0.1:3306"
+	// 读取环境变量 DBHOST，如果未设置则使用 127.0.0.1
+	dbHost := os.Getenv("DBHOST")
+	if dbHost == "" {
+		cfg.Addr = "127.0.0.1"
+	}
+	cfg.Addr = fmt.Sprintf("%s:3306", dbHost)
 	cfg.DBName = "gin_todo"
 
 	var err error
@@ -164,8 +169,8 @@ func main() {
 	router.GET("/delete/:id", deleteHandler)
 	router.POST("/add", addHandler)
 
-	fmt.Println("Server starting on http://localhost:8080")
-	if err := router.Run("localhost:8080"); err != nil {
+	fmt.Println("Server starting on http://0.0.0.0:8080")
+	if err := router.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }
