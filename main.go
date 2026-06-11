@@ -143,7 +143,7 @@ func main() {
 	// 读取环境变量 DBHOST，如果未设置则使用 127.0.0.1
 	dbHost := os.Getenv("DBHOST")
 	if dbHost == "" {
-		cfg.Addr = "127.0.0.1"
+		dbHost = "127.0.0.1"
 	}
 	cfg.Addr = fmt.Sprintf("%s:3306", dbHost)
 	cfg.DBName = "gin_todo"
