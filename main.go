@@ -98,7 +98,7 @@ func completeHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	td, err := todoByID(id)
+	td, err := queryTodoByID(id)
 	if err != nil {
 		c.String(http.StatusNotFound, "Todo not found")
 		return
@@ -175,16 +175,16 @@ func main() {
 	}
 }
 
-func todoByID(id int) (Todo, error) {
+func queryTodoByID(id int) (Todo, error) {
 	// An album to hold data from the returned row.
 	var td Todo
 
 	row := db.QueryRow("SELECT * FROM todos WHERE id = ?", id)
 	if err := row.Scan(&td.ID, &td.Task, &td.Completed); err != nil {
 		if err == sql.ErrNoRows {
-			return td, fmt.Errorf("todoByID %d: no such id", id)
+			return td, fmt.Errorf("queryTodoByID %d: no such id", id)
 		}
-		return td, fmt.Errorf("todoByID %d: %v", id, err)
+		return td, fmt.Errorf("queryTodoByID %d: %v", id, err)
 	}
 	return td, nil
 }
