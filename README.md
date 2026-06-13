@@ -11,6 +11,9 @@
 - ✅ **删除任务** - 删除不需要的任务
 - ✅ **数据持久化** - 使用 MySQL 存储所有数据
 - ✅ **Redis 缓存** - 列表查询结果缓存，提升响应速度
+- ✅ **容器化部署** - 支持 Docker Compose 一键启动
+- ✅ **Kubernetes 部署** - 提供 K8s 部署文件，支持数据持久化（PVC）
+- ✅ **CI/CD 流水线** - GitHub Actions 自动测试、构建、推送镜像
 
 ## 🛠️ 技术栈
 
@@ -18,26 +21,33 @@
 |------|------|------|
 | 语言 | Go | 1.26+ |
 | 框架 | Gin | Latest |
-| 数据库 | MySQL | 9.3+ |
-| 缓存 | Redis | Latest |
+| 数据库 | MySQL | 8.0 |
+| 缓存 | Redis | 7-alpine |
+| 容器化 | Docker / Docker Compose | Latest |
+| 编排 | Kubernetes | 1.28+ |
+| CI/CD | GitHub Actions | Latest |
 
 ## 📁 项目结构
 
 ```
 gin-todo/
-├── main.go              # 主入口文件，包含路由和业务逻辑
-├── templates/           # HTML 模板目录
-│   └── list.html        # 待办事项列表页面
-├── scripts/             # 数据库脚本
-│   └── create-tables.sql # 初始化数据库和表结构
-├── screenshot/          # 截图资源
-│   └── demo.png         # 运行截图
-├── compose.yaml         # Docker Compose 配置
-├── Dockerfile           # 应用 Docker 配置
-├── Dockerfile.mysql     # MySQL Docker 配置
-├── go.mod               # Go 依赖管理
-├── go.sum               # 依赖校验文件
-└── README.md            # 项目说明文档
+├── main.go                    # 主入口文件，包含路由和业务逻辑
+├── main_test.go               # 单元测试
+├── templates/                 # HTML 模板目录
+│   └── list.html              # 待办事项列表页面
+├── scripts/                   # 数据库脚本
+│   └── create-tables.sql      # 初始化数据库和表结构
+├── screenshot/                # 截图资源
+│   └── demo.png               # 运行截图
+├── .github/workflows/         # CI/CD 流水线配置
+├── compose.yaml               # Docker Compose 配置
+├── Dockerfile                 # 应用 Docker 配置
+├── Dockerfile.mysql           # MySQL Docker 配置
+├── docker-go-kubernetes.yaml  # K8s Deployment & Service
+├── pvc.yaml                   # K8s 持久化存储声明
+├── go.mod                     # Go 依赖管理
+├── go.sum                     # 依赖校验文件
+└── README.md                  # 项目说明文档
 ```
 
 ## 🚀 快速开始
@@ -85,6 +95,31 @@ go run .
 ```
 
 打开浏览器访问 http://localhost:8080
+
+## ☸️ Kubernetes 部署
+
+```bash
+# 1. 创建持久化存储声明
+kubectl apply -f pvc.yaml
+
+# 2. 部署应用
+kubectl apply -f docker-go-kubernetes.yaml
+
+# 3. 访问服务（NodePort 30001）
+curl http://localhost:30001/
+```
+
+> **说明**：MySQL 数据通过 PVC 持久化，删除 Deployment 不会丢失数据。
+
+## 🔧 CI/CD 流水线
+
+每次推送到 `main` 分支，GitHub Actions 会自动：
+
+1. 运行 Go 单元测试
+2. 构建 Docker 镜像
+3. 推送到 Docker Hub
+
+[查看 Actions](https://github.com/Signal-zxh/gin-todo/actions)
 
 ## 🔌 API 接口
 
