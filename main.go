@@ -23,6 +23,11 @@ type Todo struct {
 	Completed bool   `json:"completed"`
 }
 
+// isValidTask 验证任务内容是否有效
+func isValidTask(task string) bool {
+	return strings.TrimSpace(task) != ""
+}
+
 var db *sql.DB
 
 func ListHandler(c *gin.Context) {
@@ -73,7 +78,7 @@ func ListHandler(c *gin.Context) {
 
 func addHandler(c *gin.Context) {
 	task := c.PostForm("task")
-	if strings.TrimSpace(task) == "" {
+	if !isValidTask(task) {
 		c.String(http.StatusBadRequest, "Task is required")
 		return
 	}
