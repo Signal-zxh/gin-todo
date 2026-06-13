@@ -6,12 +6,14 @@ CREATE TABLE IF NOT EXISTS todos (
   PRIMARY KEY (`id`)
 )CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 先清空再插入（避免重复数据）
-DELETE FROM todos;
+INSERT INTO todos (task, completed)
+SELECT '尝试一下这个样例Todo，点击右边来完成它', false
+WHERE NOT EXISTS (SELECT 1 FROM todos WHERE task = '尝试一下这个样例Todo，点击右边来完成它');
 
-INSERT INTO todos
-  (task, completed)
-VALUES
-  ('尝试一下这个样例Todo，点击右边来完成它', false),
-  ('在上面的文本框填写一个Todo，然后添加它', false),
-  ('我会了！', false);
+INSERT INTO todos (task, completed)
+SELECT '在上面的文本框填写一个Todo，然后添加它', false
+WHERE NOT EXISTS (SELECT 1 FROM todos WHERE task = '在上面的文本框填写一个Todo，然后添加它');
+
+INSERT INTO todos (task, completed)
+SELECT '我会了！', false
+WHERE NOT EXISTS (SELECT 1 FROM todos WHERE task = '我会了！');
