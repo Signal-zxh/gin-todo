@@ -1,4 +1,3 @@
-CREATE DATABASE IF NOT EXISTS gin_todo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE gin_todo;
 CREATE TABLE IF NOT EXISTS todos (
   id         INT AUTO_INCREMENT NOT NULL,
