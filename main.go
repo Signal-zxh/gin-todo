@@ -142,16 +142,11 @@ func deleteHandler(c *gin.Context) {
 func main() {
 	// 配置并连接 MySQL
 	cfg := mysql.NewConfig()
-	cfg.User = os.Getenv("DBUSER")
+	cfg.User = getEnv("DBUSER", "root")
 	cfg.Passwd = os.Getenv("DBPASS")
 	cfg.Net = "tcp"
-	// 读取环境变量 DBHOST，如果未设置则使用 127.0.0.1
-	dbHost := os.Getenv("DBHOST")
-	if dbHost == "" {
-		dbHost = "127.0.0.1"
-	}
-	cfg.Addr = fmt.Sprintf("%s:3306", dbHost)
-	cfg.DBName = "gin_todo"
+	cfg.Addr = fmt.Sprintf("%s:%s", getEnv("DBHOST", "127.0.0.1"), getEnv("DBPORT", "3306"))
+	cfg.DBName = getEnv("DBNAME", "gin_todo")
 
 	var err error
 	db, err = sql.Open("mysql", cfg.FormatDSN())
@@ -224,6 +219,14 @@ func deleteTodo(id int) error {
 
 var rdb *redis.Client
 var cacheKey = "todos:list"
+
+// getEnv 获取环境变量，如果未设置则返回默认值
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
 
 func initRedis() {
 	rdb = redis.NewClient(&redis.Options{
