@@ -230,7 +230,7 @@ func getEnv(key, defaultValue string) string {
 
 func initRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: fmt.Sprintf("%s:%s", getEnv("REDIS_HOST", "localhost"), getEnv("REDIS_PORT", "6379")),
 	})
 }
 
