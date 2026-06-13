@@ -6,12 +6,13 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 
-# 再复制源码并编译
+# 再复制源码
 COPY *.go ./
 
 # 编译阶段（先测试再编译）
 FROM build-base AS build
-RUN go test -v ./... && CGO_ENABLED=0 go build -o /bin/server ./
+RUN go test -v ./...
+RUN CGO_ENABLED=0 go build -o /bin/server ./
 
 # 运行阶段（用最小镜像）
 FROM alpine:latest AS final
